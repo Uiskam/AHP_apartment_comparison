@@ -11,8 +11,9 @@ def get_source_data_input():
     navigation_column = [[sg.Button('Previous')], [sg.Button('Next')]]
     layout = [[
         [sg.Column(csv_column),
-         sg.Column(or_column),
-         sg.Column(manual_column)],
+         # sg.Column(or_column),
+         # sg.Column(manual_column)
+         ],
         [sg.Push(), sg.Column(navigation_column)]
     ]]
     return layout
