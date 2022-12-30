@@ -10,6 +10,7 @@ import GUI.layouts.results as results
 from GUI.layout_structure import LayoutStructure
 import numpy as np
 import sys
+from AHP.ahp import ahp
 
 
 def read_data(filename):
@@ -133,8 +134,10 @@ def get_preferences_group(feature0, feature1):
 
 
 def calculate_results(flat_comparison_data):
-    import time
-    time.sleep(2)
+    # import time
+    # time.sleep(2)
+    print(flat_comparison_data.keys())
+    print("CHUJ KURWA", ahp(flat_comparison_data))
 
 
 def start():
@@ -163,8 +166,8 @@ def start():
             i = int(event_details[1])
             j = int(event_details[2])
             cur_preference = calculate_preference(values[event])
-            flat_comparison_data[event_details[0]][i][j] = cur_preference
-            flat_comparison_data[event_details[0]][j][i] = 1 / cur_preference
+            flat_comparison_data[event_details[0]][i][j] = 1 / cur_preference
+            flat_comparison_data[event_details[0]][j][i] = cur_preference
             if cur_preference >= 1:
                 window[f'{event}-header'].update(get_flat_preference_description(cur_preference, j, i))
             else:
@@ -174,8 +177,8 @@ def start():
             preference_group, preferences_list = get_preferences_group(event_details[0], event_details[1])
             i = preferences_list.index(event_details[0])
             j = preferences_list.index(event_details[1])
-            flat_comparison_data[preference_group][i][j] = cur_preference
-            flat_comparison_data[preference_group][j][i] = 1 / cur_preference
+            flat_comparison_data[preference_group][i][j] = 1 / cur_preference
+            flat_comparison_data[preference_group][j][i] = cur_preference
             event_details[0] = event_details[0].replace('_', ' ')
             event_details[1] = event_details[1].replace('_', ' ')
             if cur_preference >= 1:

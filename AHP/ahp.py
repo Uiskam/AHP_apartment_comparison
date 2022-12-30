@@ -6,14 +6,14 @@ def conver_to_pcmatrix(m):
 
 
 def ahp(data):
-    data = {}
+    # data = {}
 
     subs = {
         "location": ['availability_of_shops', 'commute_to_university', 'proximity_to_city_center'],
         "standard": ['ambient_noise', 'decoration_level', 'insolation', 'security']
     }
 
-    #sub_labels = ['proximity_to_city_center', 'availability_of_shops', 'commute_to_university', 'security', 'insolation', 'decoration_level', 'ambient_noise']
+    # sub_labels = ['proximity_to_city_center', 'availability_of_shops', 'commute_to_university', 'security', 'insolation', 'decoration_level', 'ambient_noise']
     labels = ['location', 'price', 'roommate_number', 'size_of_the_flat', 'size_of_the_room', 'standard']
 
     order = {k: i for i, k in enumerate(labels)}
@@ -25,7 +25,7 @@ def ahp(data):
 
     for a in range(n):
         final_rank = 0
-        for key, value in weights:
+        for key, value in weights.items():
             if key in labels:
                 if key == "location" or key == "standard":
                     sub_rank = 0
