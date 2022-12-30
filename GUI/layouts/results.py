@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 import csv
-
+from math import inf
 
 def rgb(red, green, blue):
     red = min(int(red), 255) if red > 0 else 0
@@ -17,7 +17,7 @@ def get_color_per_ranking(min_ranking, max_ranking, cur_ranking):
         return rgb(0, 0, 0)
     else:
         color = (cur_ranking - min_ranking) / (max_ranking - min_ranking)
-        return rgb(255 * color, 255 * (1 - color), 0)
+        return rgb(255 * (1 - color),255 * color, 0)
 
 
 def get_mocked_results():
@@ -31,10 +31,33 @@ def get_mocked_results():
 def get_results(results=None):
     if results is None:
         results = get_mocked_results()
-    header = [[sg.Push(), sg.Text('RESULTS', font=("Arial Black", 12), text_color=rgb(125, 0, 125)), sg.Push()]]
-    footer = [[sg.Push(), sg.Button('Exit', key='-results_exit-'), sg.Push()]]
-    layout = [[
+
+    def get_table_content():
+        nonlocal results
+        table_content = []
+        max_ranking = -inf
+        min_ranking = inf
+        for _, ranking in results:
+            ranking = int(ranking)
+            if ranking > max_ranking:
+                max_ranking = ranking
+            if ranking < min_ranking:
+                min_ranking = ranking
+
+        for flat_no, ranking in results:
+            table_content.append([sg.Push(),
+                                  sg.Text(f'{flat_no}\t{ranking}',
+                                          text_color=get_color_per_ranking(min_ranking, max_ranking, int(ranking))),
+                                  sg.Push()])
+        return table_content
+
+    header = [sg.Push(), sg.Text('RESULTS', font=("Arial Black", 14)), sg.Push()]
+    table_header = [sg.Push(), sg.Text('Flat no\tranking', font=("Arial Black", 10)), sg.Push()]
+
+    footer = [sg.Push(), sg.Button('Exit', key='-results_exit-'), sg.Push()]
+    layout = [
         header,
-        footer
-    ]]
+        table_header]
+    layout.extend(get_table_content())
+    layout.append(footer)
     return layout
