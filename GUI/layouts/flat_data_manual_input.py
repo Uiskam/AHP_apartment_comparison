@@ -2,6 +2,11 @@ import PySimpleGUI as sg
 import csv
 import random
 
+preferences_priority = ['all', 'location', 'standard']
+location = ['availability_of_shops', 'commute_to_university', 'proximity_to_city_center']
+standard = ['ambient_noise', 'decoration_level', 'insolation', 'security']
+all_preferences = ['location', 'price', 'roommate_number', 'size_of_the_flat', 'size_of_the_room', 'standard']
+
 flat_features = ['ambient_noise', 'availability_of_shops', 'commute_to_university', 'decoration_level', 'insolation',
                  'price', 'proximity_to_city_center', 'roommate_number', 'security', 'size_of_the_flat',
                  'size_of_the_room']

@@ -73,5 +73,5 @@ def generate_mock_data(flat_number=5):
             flat_data = get_one_flat()
             writer.writerow(flat_data)
 
-print("ASDASD")
+#print("ASDASD")
 #generate_mock_data()
