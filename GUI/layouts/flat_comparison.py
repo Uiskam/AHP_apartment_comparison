@@ -13,11 +13,11 @@ def get_flat_comparison(feature, flats, nb):
             tmp1 = ''
 
         slider_position_value = [sg.Push(), sg.Text("flats are equal",
-                                                    key=f'-{feature}{flat1_idx}{flat2_idx}_slider_header-'), sg.Push()]
+                                                    key=f'{feature}-{flat1_idx}-{flat2_idx}-slider-header'), sg.Push()]
         record = [sg.Text(f'flat{flat1_idx + 1}: {flats[flat1_idx][feature]}{tmp1}'),
                   sg.Slider(range=(-8, 8), resolution=1, orientation='h', size=(25, 20), default_value=0,
                             enable_events=True, disable_number_display=True,
-                            key=f'-{feature}_{flat1_idx}_{flat2_idx}_slider-'),
+                            key=f'{feature}-{flat1_idx}-{flat2_idx}-slider'),
                   sg.Text(f'{flats[flat2_idx][feature]} :flat{flat2_idx + 1}')]
         return slider_position_value, record
 

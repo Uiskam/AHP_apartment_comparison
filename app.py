@@ -32,13 +32,10 @@ def read_data(filename):
         return []
 
 
-def get_app_layouts():
-    data = read_data(sys.argv[1])
+def get_app_layouts(data):
     flat_features = manual_input.flat_features
     layout_idx = 0
-    app_layouts = [[sg.Column(source_data_input.get_source_data_input(layout_idx), key=f'-{layout_idx}-')]]
     app_layouts = [[]]
-    #layout_idx += 1
     for flat_feature in flat_features:
         visibility = False
         if flat_features.index(flat_feature) == 0:
@@ -52,7 +49,7 @@ def get_app_layouts():
     layout_idx += 1
     app_layouts[0].append(sg.Column(data_processing.get_data_processing(), visible=False, key=f'-{layout_idx}-'))
     layout_idx += 1
-    app_layouts[0].append(sg.Column(results.get_results(), visible=False, key=f'-{layout_idx}-'))
+    app_layouts[0].append(sg.Column(results.get_results(len(data)), visible=False, key=f'-{layout_idx}-'))
     return app_layouts
 
 
@@ -64,10 +61,41 @@ def create_data_container(flats_quantity):
     return flats
 
 
+def calculate_preference(preference):
+    tmp = abs(preference) + 1
+    if preference < 1:
+        return 1 / tmp
+    else:
+        return tmp
+
+
+def get_preference_description(preference, idx0, idx1):
+    preference = int(preference)
+    if preference == 1:
+        return "flats are equal"
+    if 2 <= preference <= 3:
+        return f"flat {idx0} is slightly better than flat {idx1}"
+    if 4 <= preference <= 5:
+        return f"flat {idx0} is better than flat {idx1}"
+    if 6 <= preference <= 7:
+        return f"flat {idx0} is much better than flat {idx1}"
+    if 8 <= preference <= 9:
+        return f"flat {idx0} is significantly better than flat {idx1}"
+
+
+def calculate_results(flat_comparison_data):
+    import time
+    time.sleep(2)
+
+
 def start():
-    active_layout_structure = LayoutStructure.SOURCE_DATA_INPUT
-    app_layouts = get_app_layouts()
+    data = read_data(sys.argv[1])
+    active_layout_structure = LayoutStructure.FLAT_COMPARISON_AMBIENT_NOISE
+    app_layouts = get_app_layouts(data)
+    flat_comparison_data = create_data_container(len(data))
+
     window = sg.Window('Flats comparator v1.0', app_layouts)
+    flat_features = manual_input.flat_features
     while True:
         event, values = window.read()
         if event in (None, 'Exit', '-results_exit-'):
@@ -80,5 +108,24 @@ def start():
             window[f'-{active_layout_structure.value}-'].update(visible=False)
             active_layout_structure = active_layout_structure.previous()
             window[f'-{active_layout_structure.value}-'].update(visible=True)
+        event_details = event.split('-')
+        if len(event_details) == 4 and event_details[0] in flat_features:
+            i = int(event_details[1])
+            j = int(event_details[2])
+            cur_preference = calculate_preference(values[event])
+            flat_comparison_data[event_details[0]][i][j] = cur_preference
+            flat_comparison_data[event_details[0]][j][i] = 1 / cur_preference
+            if cur_preference >= 1:
+                window[f'{event}-header'].update(get_preference_description(cur_preference, j, i))
+            else:
+                window[f'{event}-header'].update(get_preference_description(1 / cur_preference, i, j))
 
+        if event == '-confirmation_confirm-':
+            window[f'-{active_layout_structure.value}-'].update(visible=False)
+            active_layout_structure = active_layout_structure.next()
+            window[f'-{active_layout_structure.value}-'].update(visible=True)
+            calculate_results(flat_comparison_data)
+            window[f'-{active_layout_structure.value}-'].update(visible=False)
+            active_layout_structure = active_layout_structure.next()
+            window[f'-{active_layout_structure.value}-'].update(visible=True)
         print(event, values)

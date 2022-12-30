@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import csv
 from math import inf
 
+
 def rgb(red, green, blue):
     red = min(int(red), 255) if red > 0 else 0
     blue = min(int(blue), 255) if blue > 0 else 0
@@ -17,20 +18,21 @@ def get_color_per_ranking(min_ranking, max_ranking, cur_ranking):
         return rgb(0, 0, 0)
     else:
         color = (cur_ranking - min_ranking) / (max_ranking - min_ranking)
-        return rgb(255 * (1 - color),255 * color, 0)
+        return rgb(255 * (1 - color), 255 * color, 0)
 
 
-def get_mocked_results():
+def get_mocked_results(flats_quantity):
     # reads the data from the csv file named resources/mock_results.csv and returns it
-    with open('resources/mock_results.csv', 'r') as file:
-        reader = csv.reader(file)
-        data = list(reader)
+    data = []
+    max_ranking = 1000 * flats_quantity
+    for i in range(flats_quantity):
+        data.append([i, max_ranking])
+        max_ranking -= 1000
     return data
 
 
-def get_results(results=None):
-    if results is None:
-        results = get_mocked_results()
+def get_results(flats_quantity):
+    results = get_mocked_results(flats_quantity)
 
     def get_table_content():
         nonlocal results
