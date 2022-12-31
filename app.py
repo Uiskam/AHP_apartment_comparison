@@ -113,11 +113,11 @@ def get_preferences_priority_description(preference, feature0, feature1):
     if 2 <= preference <= 3:
         return f"{feature0} is slightly more important than {feature1}"
     if 4 <= preference <= 5:
-        return f"flat {feature0} is more important than flat {feature1}"
+        return f"{feature0} is more important than flat {feature1}"
     if 6 <= preference <= 7:
-        return f"flat {feature0} is much more important than flat {feature1}"
+        return f"{feature0} is much more important than flat {feature1}"
     if 8 <= preference <= 9:
-        return f"flat {feature0} is significantly more important than flat {feature1}"
+        return f"{feature0} is significantly more important than flat {feature1}"
 
 
 def get_preferences_group(feature0, feature1):
@@ -133,11 +133,21 @@ def get_preferences_group(feature0, feature1):
     raise ValueError('Invalid features combination')
 
 
+# sort list of tuples by second element
+def sort_list_of_tuples(list_of_tuples):
+    list_of_tuples.sort(key=lambda x: x[1], reverse=True)
+    return list_of_tuples
+
+
 def calculate_results(flat_comparison_data):
     # import time
     # time.sleep(2)
-    print(flat_comparison_data.keys())
-    print("CHUJ KURWA", ahp(flat_comparison_data))
+    # print(flat_comparison_data.keys())
+    ranking, inconsistency = ahp(flat_comparison_data)
+    ranking = [(i, ranking[i]) for i in range(len(ranking))]
+    ranking = sort_list_of_tuples(ranking)
+    ranking = [(i, round(j, 2)) for i, j in ranking]
+    return ranking, inconsistency
 
 
 def start():
@@ -148,6 +158,7 @@ def start():
 
     window = sg.Window('Flats comparator v1.0', app_layouts)
     flat_features = manual_input.flat_features
+    flat_features_extended = flat_features + ['all', 'location', 'standard']
     while True:
         event, values = window.read()
         if event in (None, 'Exit', '-results_exit-'):
@@ -172,7 +183,7 @@ def start():
                 window[f'{event}-header'].update(get_flat_preference_description(cur_preference, j, i))
             else:
                 window[f'{event}-header'].update(get_flat_preference_description(1 / cur_preference, i, j))
-        elif len(event_details) == 3 and event_details[0] in flat_features and event_details[1] in flat_features:
+        elif len(event_details) == 3 and event_details[0] in flat_features_extended and event_details[1] in flat_features_extended:
             cur_preference = calculate_preference(values[event])
             preference_group, preferences_list = get_preferences_group(event_details[0], event_details[1])
             i = preferences_list.index(event_details[0])
@@ -192,8 +203,20 @@ def start():
             window[f'-{active_layout_structure.value}-'].update(visible=False)
             active_layout_structure = active_layout_structure.next()
             window[f'-{active_layout_structure.value}-'].update(visible=True)
-            calculate_results(flat_comparison_data)
+            ranking, inconsistencies = calculate_results(flat_comparison_data)
+            for i in range(len(ranking)):
+                window[f'-result{i}-'].update(f'{ranking[i][0] + 1}\t{ranking[i][1]}')
+                if len(inconsistencies) != 0:
+                    window[f'-inconsistency-header-'].update(visible=True)
+                    window[f'-inconsistency-content-'].update(visible=True)
+                    inconsistency_text = ''
+                    for inconsistency in inconsistencies:
+                        inconsistency_text += f'{inconsistency}\n'
+                    window[f'-inconsistency-content-'].update(f'{inconsistency_text}')
+
             window[f'-{active_layout_structure.value}-'].update(visible=False)
             active_layout_structure = active_layout_structure.next()
             window[f'-{active_layout_structure.value}-'].update(visible=True)
         print(event, values)
+        # print all key in values dict each key in seperate line
+        # print(*values, sep='\n')

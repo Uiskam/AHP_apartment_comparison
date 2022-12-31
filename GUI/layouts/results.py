@@ -49,17 +49,23 @@ def get_results(flats_quantity):
         for flat_no, ranking in results:
             table_content.append([sg.Push(),
                                   sg.Text(f'{flat_no}\t{ranking}',
+                                          key=f'-result{flat_no}-',
                                           text_color=get_color_per_ranking(min_ranking, max_ranking, int(ranking))),
                                   sg.Push()])
         return table_content
 
     header = [sg.Push(), sg.Text('RESULTS', font=("Arial Black", 14)), sg.Push()]
     table_header = [sg.Push(), sg.Text('Flat no\tranking', font=("Arial Black", 10)), sg.Push()]
-
+    inconsistency_header = [sg.Text('Inconsistencies detected in:', font=("Arial Black", 10), key='-inconsistency-header-',
+                                    visible=False),
+                            sg.Push()]
+    inconsistency_content = [sg.Text('', key=f'-inconsistency-content-'), sg.Push()]
     footer = [sg.Push(), sg.Button('Exit', key='-results_exit-'), sg.Push()]
     layout = [
         header,
         table_header]
     layout.extend(get_table_content())
+    layout.append(inconsistency_header)
+    layout.append(inconsistency_content)
     layout.append(footer)
     return layout
