@@ -6,14 +6,13 @@ def conver_to_pcmatrix(m):
 
 
 def ahp(data):
-    # data = {}
 
     subs = {
         "location": ['availability_of_shops', 'commute_to_university', 'proximity_to_city_center'],
         "standard": ['ambient_noise', 'decoration_level', 'insolation', 'security']
     }
 
-    # sub_labels = ['proximity_to_city_center', 'availability_of_shops', 'commute_to_university', 'security', 'insolation', 'decoration_level', 'ambient_noise']
+
     labels = ['location', 'price', 'roommate_number', 'size_of_the_flat', 'size_of_the_room', 'standard']
 
     order = {k: i for i, k in enumerate(labels)}
@@ -22,6 +21,8 @@ def ahp(data):
     n = len(data["price"])
     pc_matrix = {k: PCMatrix(v) for k, v in data.items()}
     weights = {k: v.priority_vector for k, v in pc_matrix.items()}
+
+    errors = [k for k,v in pc_matrix.items() if not v.is_consistent()]
 
     for a in range(n):
         final_rank = 0
