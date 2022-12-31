@@ -37,4 +37,4 @@ def ahp(data):
                     final_rank += value[a] * weights["all"][order[key]]
         ranking.append(final_rank)
 
-    return ranking
+    return ranking,errors
