@@ -47,7 +47,7 @@ def get_app_layouts(data):
                   key=f'-{layout_idx}-'))
     layout_idx += 1
     app_layouts[0].append(
-        sg.Column(preferences_priority.get_preferences_priority('all_preferences', layout_idx), visible=False,
+        sg.Column(preferences_priority.get_preferences_priority('all_preferences', layout_idx), visible=False, scrollable=True,
                   key=f'-{layout_idx}-'))
     layout_idx += 1
 
@@ -156,7 +156,7 @@ def start():
     app_layouts = get_app_layouts(data)
     flat_comparison_data = create_data_container(len(data))
 
-    window = sg.Window('Flats comparator v1.0', app_layouts)
+    window = sg.Window('Flats comparator v1.1', app_layouts, resizable=True)
     flat_features = manual_input.flat_features
     flat_features_extended = flat_features + ['all', 'location', 'standard']
     while True:
