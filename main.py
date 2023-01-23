@@ -1,7 +1,7 @@
-import PySimpleGUI as sg
 import app as app
-import GUI.mock_data_gen as data_gen
-
+import sys
 
 if __name__ == "__main__":
-    app.start()
+    if len(sys.argv) == 3:
+        app.start()
+    print('Wrong number of arguments, expected 2 (config.csv data.csv)')
