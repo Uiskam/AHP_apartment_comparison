@@ -1,8 +1,9 @@
 from enum import Enum
 from functools import total_ordering
 
+
 class LayoutStructure(Enum):
-    #SOURCE_DATA_INPUT = 0
+    # SOURCE_DATA_INPUT = 0
     LOCATION_PREFERENCE_PRIORITY = 0
     STANDARD_PREFERENCE_PRIORITY = 1
     ALL_PREFERENCE_PRIORITY = 2

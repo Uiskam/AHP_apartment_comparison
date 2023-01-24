@@ -13,18 +13,18 @@ def get_flat_comparison(feature, flats, nb):
             tmp1 = ''
 
         slider_position_value = [sg.Push(), sg.Text("flats are equal",
-                                                    key=f'{feature}-{flat1_idx}-{flat2_idx}-slider-header'), sg.Push()]
+                                                    key=f'{nb}-{feature}-{flat1_idx}-{flat2_idx}-slider-header'), sg.Push()]
         record = [sg.Text(f'flat{flat1_idx + 1}: {flats[flat1_idx][feature]}{tmp1}'),
                   sg.Slider(range=(-8, 8), resolution=1, orientation='h', size=(25, 20), default_value=0,
                             enable_events=True, disable_number_display=True,
-                            key=f'{feature}-{flat1_idx}-{flat2_idx}-slider'),
+                            key=f'{nb}-{feature}-{flat1_idx}-{flat2_idx}-slider'),
                   sg.Text(f'{flats[flat2_idx][feature]} :flat{flat2_idx + 1}')]
         return slider_position_value, record
 
     header = [sg.Push(),
               sg.Text(text=(feature.replace('_', ' ') + f' {features_units[flat_features.index(feature)]}'),
                       font=("Arial Black", 12)), sg.Push()]
-    footer = [sg.Push(), sg.Button('Previous', key=f'-{feature}_prev-'), sg.Button('Next', key=f'-{feature}_next-')]
+    #footer = [sg.Push(), sg.Button('Previous', key=f'-{feature}_prev-'), sg.Button('Next', key=f'-{feature}_next-')]
     footer = [sg.Push(), sg.Button('Previous', key=f'-prev{nb}-'), sg.Button('Next', key=f'-next{nb}-')]
     if nb == 0:
         footer = [sg.Push(), sg.Button('Next', key=f'-next{nb}-')]
