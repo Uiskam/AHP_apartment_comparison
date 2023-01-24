@@ -53,9 +53,26 @@ def read_data(filename):
 
 def get_app_layouts(data, number_of_experts):
     def get_one_expert_layout(initial_idx):
+        nonlocal data
         flat_features = manual_input.flat_features
         layout_idx = initial_idx
         app_layouts = []
+        initial_visibility = True
+        if layout_idx != 0:
+            initial_visibility = False
+        app_layouts.append(
+            sg.Column(preferences_priority.get_preferences_priority('location', layout_idx), visible=initial_visibility,
+                      key=f'-{layout_idx}-'))
+        layout_idx += 1
+        app_layouts.append(
+            sg.Column(preferences_priority.get_preferences_priority('standard', layout_idx), visible=False,
+                      key=f'-{layout_idx}-'))
+        layout_idx += 1
+        app_layouts.append(
+            sg.Column(preferences_priority.get_preferences_priority('all_preferences', layout_idx), visible=False,
+                      scrollable=True,
+                      key=f'-{layout_idx}-'))
+        layout_idx += 1
 
         for flat_feature in flat_features:
             visibility = False
@@ -64,29 +81,18 @@ def get_app_layouts(data, number_of_experts):
             app_layouts.append(
                 sg.Column(flat_comparison.get_flat_comparison(flat_feature, data, layout_idx), visible=visibility,
                           key=f'-{layout_idx}-'))
-            print(f'-{layout_idx}-')
             layout_idx += 1
 
         return app_layouts, layout_idx
 
     layouts = [[]]
     idx_counter = 0
-    layouts[0].append(
-        sg.Column(preferences_priority.get_preferences_priority('location', idx_counter), visible=True,
-                  key=f'-{idx_counter}-'))
-    idx_counter += 1
-    layouts[0].append(
-        sg.Column(preferences_priority.get_preferences_priority('standard', idx_counter), visible=False,
-                  key=f'-{idx_counter}-'))
-    idx_counter += 1
-    layouts[0].append(
-        sg.Column(preferences_priority.get_preferences_priority('all_preferences', idx_counter), visible=False,
-                  scrollable=True,
-                  key=f'-{idx_counter}-'))
-    idx_counter += 1
     for i in range(number_of_experts):
-        cur_layout, idx_counter = get_one_expert_layout(idx_counter)
-        layouts[0].append(cur_layout)
+        new_layouts, idx_counter = get_one_expert_layout(idx_counter)
+        for new_layout in new_layouts:
+            layouts[0].append(new_layout)
+
+    print('data_confirmation', idx_counter)
     layouts[0].append(
         sg.Column(data_confirmation.get_data_confirmation(idx_counter), visible=False, key=f'-{idx_counter}-'))
     idx_counter += 1
@@ -96,17 +102,24 @@ def get_app_layouts(data, number_of_experts):
     return layouts
 
 
-def create_data_container(flats_quantity):
-    flats = {}
-    flat_features = manual_input.flat_features
-    for feature in flat_features:
-        # flats[feature] = np.ones([flats_quantity, flats_quantity], dtype=float)
-        flats[feature] = [[1 for x in range(flats_quantity)] for y in range(flats_quantity)]
-    flats['all'] = [[1 for x in range(len(manual_input.all_preferences))] for y in
-                    range(len(manual_input.all_preferences))]
-    flats['location'] = [[1 for x in range(len(manual_input.location))] for y in range(len(manual_input.location))]
-    flats['standard'] = [[1 for x in range(len(manual_input.standard))] for y in range(len(manual_input.standard))]
-    return flats
+def create_data_container(flats_quantity, number_of_experts):
+    def create_expert_container():
+        nonlocal flats_quantity
+        flats = {}
+        flat_features = manual_input.flat_features
+        for feature in flat_features:
+            # flats[feature] = np.ones([flats_quantity, flats_quantity], dtype=float)
+            flats[feature] = [[1 for x in range(flats_quantity)] for y in range(flats_quantity)]
+        flats['all'] = [[1 for x in range(len(manual_input.all_preferences))] for y in
+                        range(len(manual_input.all_preferences))]
+        flats['location'] = [[1 for x in range(len(manual_input.location))] for y in range(len(manual_input.location))]
+        flats['standard'] = [[1 for x in range(len(manual_input.standard))] for y in range(len(manual_input.standard))]
+        return flats
+
+    data_container = []
+    for i in range(number_of_experts):
+        data_container.append(create_expert_container())
+    return data_container
 
 
 def calculate_preference(preference):
@@ -166,7 +179,7 @@ def sort_list_of_tuples(list_of_tuples):
     return list_of_tuples
 
 
-def calculate_results(flat_comparison_data):
+def calculate_results(flat_comparison_data, method):
     # import time
     # time.sleep(2)
     # print(flat_comparison_data.keys())
@@ -177,26 +190,16 @@ def calculate_results(flat_comparison_data):
     return ranking, inconsistency
 
 
-def get_next_layout_idx(cur_expert_idx, number_of_experts, cur_layout_idx):
+def get_next_layout_idx(cur_layout_idx):
     '''Zakładam, że dostaje cur_layout_idx PRZED inkrementacją'''
-    if cur_layout_idx == 13:
-        if cur_expert_idx == number_of_experts - 1:
-            return 14, cur_expert_idx
-        else:
-            return 3, cur_expert_idx + 1
-    else:
-        return cur_layout_idx + 1, cur_expert_idx
+    nex_expert_idx = (cur_layout_idx + 1) // 14
+    return cur_layout_idx + 1, nex_expert_idx
 
 
-def get_prev_layout_idx(cur_expert_idx, cur_layout_idx):
+def get_prev_layout_idx(cur_layout_idx):
     '''Zakładam, że dostaje cur_layout_idx PRZED dekremtnacją'''
-    if cur_layout_idx == 3:
-        if cur_expert_idx == 0:
-            return 2, cur_expert_idx
-        else:
-            return 13, cur_expert_idx - 1
-    else:
-        return cur_layout_idx - 1, cur_expert_idx
+    nex_expert_idx = (cur_layout_idx - 1) // 14
+    return cur_layout_idx - 1, nex_expert_idx
 
 
 def start():
@@ -205,7 +208,7 @@ def start():
 
     active_layout_idx = 0
     app_layouts = get_app_layouts(data, number_of_experts)
-    flat_comparison_data = create_data_container(len(data))
+    flat_comparison_data = create_data_container(len(data), number_of_experts)
 
     window = sg.Window(f'Flats comparator v1.1 Expert{1}', app_layouts)
     flat_features = manual_input.flat_features
@@ -216,15 +219,17 @@ def start():
         if event in (None, 'Exit', '-results_exit-'):
             break
         elif event == f'-next{active_layout_idx}-':
-            next_layout_idx, cur_expert_idx = get_next_layout_idx(cur_expert_idx, number_of_experts,
-                                                                  active_layout_idx)
+            next_layout_idx, cur_expert_idx = get_next_layout_idx(active_layout_idx)
 
-            window.set_title(f'Flats comparator v1.1 Expert{cur_expert_idx + 1}')
+            if next_layout_idx < number_of_experts * 14:
+                window.set_title(f'Flats comparator v1.1 Expert{cur_expert_idx + 1}')
+            else:
+                window.set_title(f'Flats comparator v1.1')
             window[f'-{active_layout_idx}-'].update(visible=False)
             active_layout_idx = next_layout_idx
             window[f'-{active_layout_idx}-'].update(visible=True)
         elif event == f'-prev{active_layout_idx}-':
-            next_layout_idx, cur_expert_idx = get_prev_layout_idx(cur_expert_idx, active_layout_idx)
+            next_layout_idx, cur_expert_idx = get_prev_layout_idx(active_layout_idx)
             window.set_title(f'Flats comparator v1.1 Expert{cur_expert_idx + 1}')
 
             window[f'-{active_layout_idx}-'].update(visible=False)
@@ -232,25 +237,30 @@ def start():
             window[f'-{active_layout_idx}-'].update(visible=True)
 
         event_details = event.split('-')
+        print(event_details)
 
-        if len(event_details) == 4 and event_details[0] in flat_features:
+        if len(event_details) == 5 and event_details[1] in flat_features:
+            print("KUPA")
+            event_details = event_details[1:]
             i = int(event_details[1])
             j = int(event_details[2])
             cur_preference = calculate_preference(values[event])
-            flat_comparison_data[event_details[0]][i][j] = 1 / cur_preference
-            flat_comparison_data[event_details[0]][j][i] = cur_preference
+            flat_comparison_data[cur_expert_idx][event_details[0]][i][j] = 1 / cur_preference
+            flat_comparison_data[cur_expert_idx][event_details[0]][j][i] = cur_preference
             if cur_preference >= 1:
                 window[f'{event}-header'].update(get_flat_preference_description(cur_preference, j, i))
             else:
                 window[f'{event}-header'].update(get_flat_preference_description(1 / cur_preference, i, j))
-        elif len(event_details) == 3 and event_details[0] in flat_features_extended and event_details[
-            1] in flat_features_extended:
+        elif len(event_details) == 4 and event_details[1] in flat_features_extended and event_details[
+            2] in flat_features_extended:
+            print("HUJ")
+            event_details = event_details[1:]
             cur_preference = calculate_preference(values[event])
             preference_group, preferences_list = get_preferences_group(event_details[0], event_details[1])
             i = preferences_list.index(event_details[0])
             j = preferences_list.index(event_details[1])
-            flat_comparison_data[preference_group][i][j] = 1 / cur_preference
-            flat_comparison_data[preference_group][j][i] = cur_preference
+            flat_comparison_data[cur_expert_idx][preference_group][i][j] = 1 / cur_preference
+            flat_comparison_data[cur_expert_idx][preference_group][j][i] = cur_preference
             event_details[0] = event_details[0].replace('_', ' ')
             event_details[1] = event_details[1].replace('_', ' ')
             if cur_preference >= 1:
@@ -261,10 +271,14 @@ def start():
                     get_preferences_priority_description(1 / cur_preference, event_details[0], event_details[1]))
 
         elif event == '-confirmation_confirm-':
-            window[f'-{active_layout_structure.value}-'].update(visible=False)
-            active_layout_structure = active_layout_structure.next()
-            window[f'-{active_layout_structure.value}-'].update(visible=True)
-            ranking, inconsistencies = calculate_results(flat_comparison_data)
+            next_layout_idx, cur_expert_idx = get_next_layout_idx(active_layout_idx)
+
+            window.set_title(f'Flats comparator v1.1 Expert{cur_expert_idx + 1}')
+            window[f'-{active_layout_idx}-'].update(visible=False)
+            active_layout_idx = next_layout_idx
+            window[f'-{active_layout_idx}-'].update(visible=True)
+
+            ranking, inconsistencies = calculate_results(flat_comparison_data, method)
 
             for i in range(len(ranking)):
                 window[f'-result{i}-'].update(f'{ranking[i][0] + 1}\t{ranking[i][1]}')
@@ -276,9 +290,12 @@ def start():
                         inconsistency_text += f'{inconsistency}\n'
                     window[f'-inconsistency-content-'].update(f'{inconsistency_text}')
 
-            window[f'-{active_layout_structure.value}-'].update(visible=False)
-            active_layout_structure = active_layout_structure.next()
-            window[f'-{active_layout_structure.value}-'].update(visible=True)
+            next_layout_idx, cur_expert_idx = get_next_layout_idx(active_layout_idx)
+
+            window.set_title(f'Flats comparator v1.1 Expert{cur_expert_idx + 1}')
+            window[f'-{active_layout_idx}-'].update(visible=False)
+            active_layout_idx = next_layout_idx
+            window[f'-{active_layout_idx}-'].update(visible=True)
         # print(event, values)
         # print all key in values dict each key in seperate line
         # print(*values, sep='\n')

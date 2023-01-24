@@ -37,8 +37,9 @@ def get_preferences_priority(preference_group, nb):
     max_feature_length = get_longest_string_length(active_preferences)
 
     def record_compare_preferences(feature0, feature1):
+        nonlocal nb
         slider_position_value = [sg.Push(), sg.Text("features are considered equal",
-                                                    key=f'{feature0}-{feature1}-slider-header'), sg.Push()]
+                                                    key=f'{nb}-{feature0}-{feature1}-slider-header'), sg.Push()]
         if preference_group == 'location':
             tmp = 7
         else:
@@ -46,7 +47,7 @@ def get_preferences_priority(preference_group, nb):
         record = [sg.Text(f'{replace_(feature0)}', size=(max_feature_length - tmp, 1)),
                   sg.Slider(range=(-8, 8), resolution=1, orientation='h', size=(25, 20), default_value=0,
                             enable_events=True, disable_number_display=True,
-                            key=f'{feature0}-{feature1}-slider'),
+                            key=f'{nb}-{feature0}-{feature1}-slider'),
                   sg.Text(f'{replace_(feature1)}')]
         return slider_position_value, record
 
