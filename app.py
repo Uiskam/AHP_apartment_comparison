@@ -183,7 +183,7 @@ def calculate_results(flat_comparison_data, method):
     # import time
     # time.sleep(2)
     # print(flat_comparison_data.keys())
-    ranking, inconsistency = ahp(flat_comparison_data)
+    ranking, inconsistency = ahp(flat_comparison_data, method)
     ranking = [(i, ranking[i]) for i in range(len(ranking))]
     ranking = sort_list_of_tuples(ranking)
     ranking = [(i, round(j, 2)) for i, j in ranking]
