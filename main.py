@@ -4,7 +4,5 @@ import sys
 if __name__ == "__main__":
     if len(sys.argv) == 3:
         app.start()
-    tmp = []
-    tmp.append([1,2, 3])
-    print(tmp)
-    print('Wrong number of arguments, expected 2 (config.csv data.csv)')
+    else:
+        print('Wrong number of arguments, expected 2 (config.csv data.csv)')

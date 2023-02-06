@@ -240,7 +240,6 @@ def start():
         print(event_details)
 
         if len(event_details) == 5 and event_details[1] in flat_features:
-            print("KUPA")
             event_details = event_details[1:]
             i = int(event_details[1])
             j = int(event_details[2])
@@ -253,7 +252,6 @@ def start():
                 window[f'{event}-header'].update(get_flat_preference_description(1 / cur_preference, i, j))
         elif len(event_details) == 4 and event_details[1] in flat_features_extended and event_details[
             2] in flat_features_extended:
-            print("HUJ")
             event_details = event_details[1:]
             cur_preference = calculate_preference(values[event])
             preference_group, preferences_list = get_preferences_group(event_details[0], event_details[1])
