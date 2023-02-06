@@ -1,11 +1,14 @@
 from AHP.PCMatrix import PCMatrix
+from scipy.stats.mstats import gmean
 
 
-def conver_to_pcmatrix(m):
-    return PCMatrix(m)
 
+def mean(numbers):
+    return float(sum(numbers)) / max(len(numbers), 1)
 
-def ahp(data):
+def ahp(data, method):
+
+    group_method="am"
 
     subs = {
         "location": ['availability_of_shops', 'commute_to_university', 'proximity_to_city_center'],
@@ -17,24 +20,31 @@ def ahp(data):
 
     order = {k: i for i, k in enumerate(labels)}
 
-    ranking = []
-    n = len(data["price"])
-    pc_matrix = {k: PCMatrix(v) for k, v in data.items()}
-    weights = {k: v.priority_vector for k, v in pc_matrix.items()}
+    rankings = [[] for i in range(len(data))]
+    n = len(data[0]["price"])
+    pc_matrixs = [{k: PCMatrix(v, method) for k, v in expert.items()} for expert in data]
 
-    errors = [k for k,v in pc_matrix.items() if not v.is_consistent()]
+    weights = [{k: v.priority_vector for k, v in expert.items()} for expert in pc_matrixs]
 
-    for a in range(n):
-        final_rank = 0
-        for key, value in weights.items():
-            if key in labels:
-                if key == "location" or key == "standard":
-                    sub_rank = 0
-                    for i, sub in enumerate(subs[key]):
-                        sub_rank += value[i] * weights[sub][a]
-                    final_rank += sub_rank * weights["all"][order[key]]
-                else:
-                    final_rank += value[a] * weights["all"][order[key]]
-        ranking.append(final_rank)
+    errors = [[k for k, v in expert.items() if not v.is_consistent()] for expert in pc_matrixs]
 
+    for i in range(len(pc_matrixs)):
+        for a in range(n):
+            final_rank = 0
+            for key, value in weights[i].items():
+                if key in labels:
+                    if key == "location" or key == "standard":
+                        sub_rank = 0
+                        for b, sub in enumerate(subs[key]):
+                            sub_rank += value[b] * weights[i][sub][a]
+                        final_rank += sub_rank * weights[i]["all"][order[key]]
+                    else:
+                        final_rank += value[a] * weights[i]["all"][order[key]]
+            rankings[i].append(final_rank)
+
+    ranking=[]
+    if group_method == "am":
+        ranking = [mean(row) for row in [[x[i] for x in rankings] for i in range(len(rankings[0]))]]
+    elif group_method == "gmm":
+        ranking = [gmean(row) for row in [[x[i] for x in rankings] for i in range(len(rankings[0]))]]
     return ranking,errors
